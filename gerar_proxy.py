@@ -7,9 +7,10 @@ import sys
 CHANNEL_ID = '6838a98df9bd067a38d1b8f7' 
 
 # Parâmetros para a API de boot da Pluto TV
+# Estes valores foram atualizados para tentar contornar o erro 400
 PLUTO_PARAMS = {
     'appName': 'web',
-    'appVersion': '8.0.0-111b2b9dc00bd0bea9030b30662159ed9e7c8bc6',
+    'appVersion': '8.0.0',
     'deviceVersion': '122.0.0',
     'deviceModel': 'web',
     'deviceMake': 'chrome',
@@ -21,7 +22,11 @@ PLUTO_PARAMS = {
 def get_jwt_token():
     """Obtém um novo token JWT da Pluto TV."""
     try:
-        response = requests.get('https://boot.pluto.tv/v4/start', params=PLUTO_PARAMS)
+        # AQUI ESTÁ A MUDANÇA: Adicionamos um cabeçalho (headers) para fingir ser um navegador
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        response = requests.get('https://boot.pluto.tv/v4/start', params=PLUTO_PARAMS, headers=headers)
         response.raise_for_status()
         data = response.json()
         return data.get('sessionToken')
@@ -35,6 +40,7 @@ def generate_proxy_playlist(jwt_token):
         print("Token JWT inválido. Abortando.", file=sys.stderr)
         return
 
+    # URL base do stream
     stream_base_url = f"https://service-stitcher.clusters.pluto.tv/v1/stitch/embed/hls/channel/{CHANNEL_ID}/master.m3u8"
     
     stream_params = {
