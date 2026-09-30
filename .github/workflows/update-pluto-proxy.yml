@@ -1,0 +1,32 @@
+name: Atualizar Proxy do Player Pluto TV
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependências
+        run: pip install requests
+
+      - name: Gerar arquivo de proxy
+        run: python gerar_proxy.py
+
+      - name: Fazer commit e push do arquivo gerado
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add pluto-proxy.m3u8
+          git commit -m "Atualizar proxy da Pluto TV com novo token JWT [skip ci]" || exit 0
+          git push
